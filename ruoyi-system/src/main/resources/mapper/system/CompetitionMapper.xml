@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.CompetitionDao">
+    <select id="findCompetitionById" parameterType="String" resultMap="competitionMap">
+        SELECT c.competition_id competition_id, c.competition_time competition_time, c.competition_name
+        competition_name,
+        c.competition_content competition_content, c.competition_site competition_site, c.competition_state
+        competition_state,
+        c.competition_people_sum competition_people_sum, f.file_id file_id, f.file_name file_name, f.file_path file_path
+        FROM t_competition c
+        LEFT JOIN t_file f
+        ON c.competition_id = f.competition_id
+        WHERE c.competition_id = #{v}
+    </select>
+
+    <resultMap id="competitionMap" type="com.ruoyi.system.domain.Competition">
+        <id column="competition_id" property="competitionId" javaType="String"/>
+        <result column="competition_time" property="competitionTime" javaType="String"/>
+        <result column="competition_name" property="competitionName" javaType="String"/>
+        <result column="competition_content" property="competitionContent" javaType="String"/>
+        <result column="competition_site" property="competitionSite" javaType="String"/>
+        <result column="competition_state" property="competitionState" javaType="Integer"/>
+        <result column="competition_people_sum" property="competitionPeopleSum" javaType="Integer"/>
+        <collection property="files" ofType="com.ruoyi.system.domain.File" column="file_id">
+            <id column="file_id" property="fileId" javaType="String"/>
+            <result column="file_name" property="fileName" javaType="String"/>
+            <result column="file_path" property="filePath" javaType="String"/>
+        </collection>
+    </resultMap>
+
+
+    <insert id="insertCompetition" parameterType="com.ruoyi.system.domain.Competition">
+        INSERT INTO t_competition(competition_id, competition_name, competition_state,
+        competition_content, competition_type, competition_time, competition_level, competition_site,
+        competition_people_sum)
+        VALUES (#{competitionId} , #{competitionName}, #{competitionState}, #{competitionContent},
+        #{competitionType}, #{competitionTime}, #{competitionLevel}, #{competitionSite}, #{competitionPeopleSum})
+    </insert>
+
+    <delete id="deleteCompetitionById" parameterType="String">
+        DELETE FROM t_competition WHERE competition_id = #{v}
+    </delete>
+
+    <update id="updateCompetition" parameterType="com.ruoyi.common.utils.CompetitionNotificationVO">
+        UPDATE t_competition SET competition_name = #{competitionName}, competition_content = #{competitionContent},
+        competition_site = #{competitionSite}, competition_type = #{competitionType}, competition_level =
+        #{competitionLevel},
+        competition_time = #{competitionTime}, competition_people_sum = #{competitionPeopleSum},
+        competition_state = #{competitionState}
+        WHERE competition_id = #{competitionId}
+    </update>
+
+
+    <update id="passUserBycompetitionIdANDuserId" >
+        UPDATE t_user_competition SET audit_state = 1 WHERE competition_id = #{competitionId} AND user_id = #{userId}
+    </update>
+
+    <update id="passTeamBycompetitionIdANDteamId" >
+        UPDATE t_team SET audit_state = 1 WHERE  team_id = #{teamId} AND competition_id = #{competitionId}
+    </update>
+
+    <update id="competitionAudit" >
+        UPDATE t_competition SET competition_state = #{competitionState} WHERE competition_id = #{competitionId}
+    </update>
+
+
+
+
+
+
+    <select id="getUserCompetitionProcess" resultMap="CompetitionProcessMap">
+        SELECT
+        a.competition_id,a.activity_id,a.activity_name,a.activity_starttime,a.activity_endtime,a.ordernum,
+        ua.activity_state,f.file_id,f.file_name,f.file_path
+        FROM t_activity a LEFT JOIN t_user_activity ua on ua.activity_id=a.activity_id
+        LEFT JOIN t_workfile f on f.file_id = ua.file_id
+        WHERE a.competition_id = #{competitionId} AND ua.user_id= #{userId}
+        ORDER BY a.ordernum ASC
+    </select>
+
+
+    <select id="getTeamCompetitionProcess" resultMap="CompetitionProcessMap">
+        SELECT
+            a.competition_id,a.activity_id,a.activity_name,a.activity_starttime,a.activity_endtime,a.ordernum,
+            ta.activity_state,f.file_id,f.file_name,f.file_path
+        FROM t_activity a LEFT JOIN t_team_activity ta on ta.activity_id=a.activity_id
+        LEFT JOIN t_workfile f on f.file_id = ta.file_id
+        WHERE a.competition_id = #{competitionId} AND ta.team_id= #{teamId}
+        ORDER BY a.ordernum ASC
+    </select>
+    <resultMap id="CompetitionProcessMap" type="com.ruoyi.system.domain.CompetitionProcess">
+        <result column="activity_id" property="activityId" />
+        <result column="activity_name" property="activityName" />
+        <result column="competition_id" property="competitionId" />
+        <result column="activity_starttime" property="activityStarttime" />
+        <result column="activity_endtime" property="activityEndtime" />
+        <result column="ordernum" property="ordernum" />
+        <result column="activity_state" property="activityState"/>
+        <association property="workfile" javaType="com.ruoyi.system.domain.WorkFile" column="file_id">
+            <result column="file_id" property="fileId" />
+            <result column="file_name" property="fileName" />
+            <result column="file_path" property="filePath" />
+        </association>
+    </resultMap>
+
+    <select id="findAllCompetition" resultMap="findAllCompetitionMap">
+        SELECT c.competition_id competition_id, c.competition_time competition_time, c.competition_name
+        competition_name,
+        c.competition_content competition_content, c.competition_site competition_site, c.competition_level
+        competition_level,
+        c.competition_type competition_type, c.competition_people_sum competition_people_sum
+        FROM t_competition c
+        WHERE c.competition_state != 0 and c.competition_state != 3
+        ORDER BY c.competition_time DESC
+    </select>
+
+    <resultMap id="findAllCompetitionMap" type="com.ruoyi.system.domain.Competition">
+        <id column="competition_id" property="competitionId" javaType="String"/>
+        <result column="competition_time" property="competitionTime" javaType="String"/>
+        <result column="competition_name" property="competitionName" javaType="String"/>
+        <result column="competition_content" property="competitionContent" javaType="String"/>
+        <result column="competition_site" property="competitionSite" javaType="String"/>
+        <result column="competition_level" property="competitionLevel" javaType="Integer"/>
+        <result column="competition_type" property="competitionType" javaType="String"/>
+        <result column="competition_people_sum" property="competitionPeopleSum" javaType="Integer"/>
+    </resultMap>
+
+    <select id="findUserByCompetitionId" parameterType="String" resultMap="findUserByCompetitionIdMap">
+        select u.user_id, u.user_name, u.nick_name, u.sex, u.user_type, u.student_id, u.orgnization, u.academy, u.major, u.phonenumber, u.email, u.user_remark, u.password, u.avatar, u.status, u.del_flag, u.login_ip, u.login_date, u.create_by, u.create_time, u.update_by, u.update_time, u.remark,
+               org.organization_name
+        from t_user_competition uc
+        left join sys_suser u
+        on uc.user_id = u.user_id
+        left join sys_organization org on org.organization_id = u.orgnization
+        where uc.competition_id = #{v}
+    </select>
+
+    <resultMap id="findUserByCompetitionIdMap" type="SysSuser">
+        <id     property="userId"       column="user_id"      />
+        <result property="userName"    column="user_name"    />
+        <result property="nickName"    column="nick_name"    />
+        <result property="sex"    column="sex"    />
+        <result property="userType"    column="user_type"    />
+        <result property="studentId"    column="student_id"    />
+        <result property="orgnization"    column="orgnization"    />
+        <result property="orgnizationName"    column="organization_name"    />
+        <result property="academy"    column="academy"    />
+        <result property="major"    column="major"    />
+        <result property="phonenumber"    column="phonenumber"    />
+        <result property="email"    column="email"    />
+        <result property="userRemark"    column="user_remark"    />
+        <result property="password"    column="password"    />
+        <result property="avatar"    column="avatar"    />
+        <result property="status"    column="status"    />
+        <result property="delFlag"    column="del_flag"    />
+        <result property="loginIp"    column="login_ip"    />
+        <result property="loginDate"    column="login_date"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <select id="findCompetitionListByUserId" parameterType="Long" resultMap="findCompetitionListByUserIdMap">
+        SELECT uc.date dt, c.competition_name competition_name, c.competition_type competition_type,
+        c.competition_id competition_id,c.competition_people_sum competition_people_sum, c.competition_state
+        competition_state
+        FROM t_user_competition uc
+        LEFT JOIN t_competition c
+        ON uc.competition_id = c.competition_id
+        WHERE uc.user_id = #{v}
+    </select>
+
+    <resultMap id="findCompetitionListByUserIdMap" type="com.ruoyi.system.domain.UserCompetition">
+        <result column="dt" property="date" javaType="Long"/>
+        <association property="user" column="user_id" javaType="SysSuser" >
+            <id column="user_id" property="userId" javaType="String"/>
+        </association>
+        <association property="competition" javaType="com.ruoyi.system.domain.Competition" column="competition_id">
+            <id column="competition_id" property="competitionId" javaType="String"/>
+            <result column="competition_name" property="competitionName" javaType="String"/>
+            <result column="competition_state" property="competitionState" javaType="Integer"/>
+            <result column="competition_type" property="competitionType" javaType="String"/>
+            <result column="competition_people_sum" property="competitionPeopleSum" javaType="Integer"/>
+        </association>
+    </resultMap>
+
+
+    <select id="findAllTeamCompetition" resultMap="teamcompetitionMap">
+        SELECT tc.competition_id, tc.competition_name, tc.competition_people_sum
+        FROM t_competition tc
+        WHERE tc.competition_people_sum > 1 and tc.competition_state != 3
+    </select>
+
+    <resultMap id="teamcompetitionMap" type="com.ruoyi.system.domain.Competition">
+        <id column="competition_id" property="competitionId" javaType="String"/>
+        <result column="competition_name" property="competitionName" javaType="String"/>
+        <result column="competition_people_sum" property="competitionPeopleSum" javaType="Integer"/>
+    </resultMap>
+
+
+    <select id="findUserList" parameterType="String" resultMap="userMap">
+        select u.user_id, u.user_name, u.nick_name, u.sex, u.user_type, u.student_id, u.orgnization, u.academy, u.major, u.phonenumber, u.email, u.user_remark, u.password, u.avatar, u.status, u.del_flag, u.login_ip, u.login_date, u.create_by, u.create_time, u.update_by, u.update_time, u.remark,
+               uc.audit_state,uc.competition_id,
+               org.organization_name
+        from t_user_competition uc
+        left join sys_suser u
+        on uc.user_id = u.user_id
+        left join sys_organization org on org.organization_id = u.orgnization
+        where uc.competition_id = #{v} order by uc.audit_state asc
+    </select>
+
+    <resultMap id="userMap" type="com.ruoyi.system.domain.UserCompetition">
+        <result column="competition_id" property="competitionId" javaType="String"/>
+        <result column="user_id" property="userId" javaType="Long"/>
+        <result column="audit_state" property="auditState" javaType="Integer"/>
+        <association property="user" column="user_id" javaType="SysSuser" >
+            <result property="userId"       column="user_id"      />
+            <result property="userName"    column="user_name"    />
+            <result property="nickName"    column="nick_name"    />
+            <result property="sex"    column="sex"    />
+            <result property="userType"    column="user_type"    />
+            <result property="studentId"    column="student_id"    />
+            <result property="orgnization"    column="orgnization"    />
+            <result property="orgnizationName"    column="organization_name"    />
+            <result property="academy"    column="academy"    />
+            <result property="major"    column="major"    />
+            <result property="phonenumber"    column="phonenumber"    />
+            <result property="email"    column="email"    />
+            <result property="userRemark"    column="user_remark"    />
+            <result property="password"    column="password"    />
+            <result property="avatar"    column="avatar"    />
+            <result property="status"    column="status"    />
+            <result property="delFlag"    column="del_flag"    />
+            <result property="loginIp"    column="login_ip"    />
+            <result property="loginDate"    column="login_date"    />
+            <result property="createBy"    column="create_by"    />
+            <result property="createTime"    column="create_time"    />
+            <result property="updateBy"    column="update_by"    />
+            <result property="updateTime"    column="update_time"    />
+            <result property="remark"    column="remark"    />
+        </association>
+
+    </resultMap>
+
+    <select id="findTeamCompetitionListByUserId" parameterType="Long" resultMap="findTeamCompetitionListByUserIdMap">
+        SELECT t.captain_id captain_id, t.apply_time apply_time, c.competition_name competition_name, c.competition_type competition_type,
+        c.competition_id competition_id,c.competition_people_sum competition_people_sum, c.competition_state competition_state
+        FROM t_team t
+        LEFT JOIN t_competition c
+        ON t.competition_id = c.competition_id
+        WHERE t.captain_id = #{v} AND t.apply_time IS NOT NULL
+    </select>
+
+    <resultMap id="findTeamCompetitionListByUserIdMap" type="com.ruoyi.system.domain.UserCompetition">
+        <result column="apply_time" property="date" javaType="Long"/>
+        <association property="user" column="captain_id" javaType="SysSuser" >
+            <id column="captain_id" property="userId" javaType="Long"/>
+        </association>
+        <association property="competition" javaType="com.ruoyi.system.domain.Competition" column="competition_id">
+            <id column="competition_id" property="competitionId" javaType="String"/>
+            <result column="competition_name" property="competitionName" javaType="String"/>
+            <result column="competition_state" property="competitionState" javaType="Integer"/>
+            <result column="competition_type" property="competitionType" javaType="String"/>
+            <result column="competition_people_sum" property="competitionPeopleSum" javaType="Integer"/>
+        </association>
+    </resultMap>
+</mapper>

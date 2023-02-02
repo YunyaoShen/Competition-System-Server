@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.CompetitionTypeDao">
+    <select id="findAllCompetitionType" resultMap="findCompetitionType">
+        SELECT ct.competition_type_id, ct.competition_type_name
+        FROM t_competitiontype ct
+    </select>
+
+    <resultMap type="com.ruoyi.system.domain.CompetitionType" id="findCompetitionType">
+        <result property="competitionTypeId"    column="competition_type_id"    />
+        <result property="competitionTypeName"    column="competition_type_name"    />
+    </resultMap>
+</mapper>

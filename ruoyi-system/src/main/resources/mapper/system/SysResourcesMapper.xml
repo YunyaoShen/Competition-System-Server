@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysResourcesMapper">
+
+	<resultMap type="SysResources" id="SysResourcesResult">
+		<result property="id"    column="id"    />
+		<result property="name"    column="name"    />
+		<result property="url"    column="url"    />
+		<result property="type"    column="type"    />
+		<result property="size"    column="size"    />
+		<result property="delFlag"    column="del_flag"    />
+		<result property="md5"    column="md5"    />
+		<result property="createBy"    column="create_by"    />
+		<result property="createTime"    column="create_time"    />
+		<result property="updateBy"    column="update_by"    />
+		<result property="updateTime"    column="update_time"    />
+	</resultMap>
+
+	<sql id="selectSysResourcesVo">
+		select id, name, url, type, size, del_flag, md5, create_by, create_time, update_by, update_time from sys_resources
+	</sql>
+
+	<select id="selectSysResourcesList" parameterType="SysResources" resultMap="SysResourcesResult">
+		<include refid="selectSysResourcesVo"/>
+		<where>
+			<if test="id != null "> and id = #{id}</if>
+			<if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+			<if test="url != null  and url != ''"> and url = #{url}</if>
+			<if test="type != null  and type != ''"> and type = #{type}</if>
+			<if test="size != null "> and size = #{size}</if>
+			<if test="md5 != null  and md5 != ''"> and md5 = #{md5}</if>
+		</where>
+	</select>
+
+	<select id="selectSysResourcesById" parameterType="Long" resultMap="SysResourcesResult">
+		<include refid="selectSysResourcesVo"/>
+		where id = #{id}
+	</select>
+
+	<insert id="insertSysResources" parameterType="SysResources" useGeneratedKeys="true" keyProperty="id">
+		insert into sys_resources
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="name != null">name,</if>
+			<if test="url != null">url,</if>
+			<if test="type != null">type,</if>
+			<if test="size != null">size,</if>
+			<if test="delFlag != null">del_flag,</if>
+			<if test="md5 != null">md5,</if>
+			<if test="createBy != null">create_by,</if>
+			<if test="createTime != null">create_time,</if>
+			<if test="updateBy != null">update_by,</if>
+			<if test="updateTime != null">update_time,</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="name != null">#{name},</if>
+			<if test="url != null">#{url},</if>
+			<if test="type != null">#{type},</if>
+			<if test="size != null">#{size},</if>
+			<if test="delFlag != null">#{delFlag},</if>
+			<if test="md5 != null">#{md5},</if>
+			<if test="createBy != null">#{createBy},</if>
+			<if test="createTime != null">#{createTime},</if>
+			<if test="updateBy != null">#{updateBy},</if>
+			<if test="updateTime != null">#{updateTime},</if>
+		</trim>
+	</insert>
+
+	<update id="updateSysResources" parameterType="SysResources">
+		update sys_resources
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="name != null">name = #{name},</if>
+			<if test="url != null">url = #{url},</if>
+			<if test="type != null">type = #{type},</if>
+			<if test="size != null">size = #{size},</if>
+			<if test="delFlag != null">del_flag = #{delFlag},</if>
+			<if test="md5 != null">md5 = #{md5},</if>
+			<if test="createBy != null">create_by = #{createBy},</if>
+			<if test="createTime != null">create_time = #{createTime},</if>
+			<if test="updateBy != null">update_by = #{updateBy},</if>
+			<if test="updateTime != null">update_time = #{updateTime},</if>
+		</trim>
+		where id = #{id}
+	</update>
+
+	<delete id="deleteSysResourcesById" parameterType="Long">
+		delete from sys_resources where id = #{id}
+	</delete>
+
+	<delete id="deleteSysResourcesByIds" parameterType="String">
+		delete from sys_resources where id in
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+	<select id="selectMd5" resultType="com.ruoyi.system.domain.SysResources">
+		select md5
+		from sys_resources
+		where md5 = #{md5}
+	</select>
+</mapper>

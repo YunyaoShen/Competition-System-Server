@@ -32,16 +32,6 @@ public class DataScopeAspect
     public static final String DATA_SCOPE_CUSTOM = "2";
 
     /**
-     * 部门数据权限
-     */
-    public static final String DATA_SCOPE_DEPT = "3";
-
-    /**
-     * 部门及以下数据权限
-     */
-    public static final String DATA_SCOPE_DEPT_AND_CHILD = "4";
-
-    /**
      * 仅本人数据权限
      */
     public static final String DATA_SCOPE_SELF = "5";
@@ -68,8 +58,7 @@ public class DataScopeAspect
             // 如果是超级管理员，则不过滤数据
             if (StringUtils.isNotNull(currentUser) && !currentUser.isAdmin())
             {
-                dataScopeFilter(joinPoint, currentUser, controllerDataScope.deptAlias(),
-                        controllerDataScope.userAlias());
+                dataScopeFilter(joinPoint, currentUser, controllerDataScope.userAlias());
             }
         }
     }
@@ -81,7 +70,7 @@ public class DataScopeAspect
      * @param user 用户
      * @param userAlias 别名
      */
-    public static void dataScopeFilter(JoinPoint joinPoint, SysUser user, String deptAlias, String userAlias)
+    public static void dataScopeFilter(JoinPoint joinPoint, SysUser user, String userAlias)
     {
         StringBuilder sqlString = new StringBuilder();
 
@@ -93,22 +82,6 @@ public class DataScopeAspect
                 sqlString = new StringBuilder();
                 break;
             }
-            else if (DATA_SCOPE_CUSTOM.equals(dataScope))
-            {
-                sqlString.append(StringUtils.format(
-                        " OR {}.dept_id IN ( SELECT dept_id FROM sys_role_dept WHERE role_id = {} ) ", deptAlias,
-                        role.getRoleId()));
-            }
-            else if (DATA_SCOPE_DEPT.equals(dataScope))
-            {
-                sqlString.append(StringUtils.format(" OR {}.dept_id = {} ", deptAlias, user.getDeptId()));
-            }
-            else if (DATA_SCOPE_DEPT_AND_CHILD.equals(dataScope))
-            {
-                sqlString.append(StringUtils.format(
-                        " OR {}.dept_id IN ( SELECT dept_id FROM sys_dept WHERE dept_id = {} or find_in_set( {} , ancestors ) )",
-                        deptAlias, user.getDeptId(), user.getDeptId()));
-            }
             else if (DATA_SCOPE_SELF.equals(dataScope))
             {
                 if (StringUtils.isNotBlank(userAlias))
@@ -118,7 +91,7 @@ public class DataScopeAspect
                 else
                 {
                     // 数据权限为仅本人且没有userAlias别名不查询任何数据
-                    sqlString.append(StringUtils.format(" OR {}.dept_id = 0 ", deptAlias));
+                    sqlString.append(" OR 1=0 ");
                 }
             }
         }

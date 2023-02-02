@@ -1,17 +1,18 @@
 package com.ruoyi.common.core.domain.entity;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.ruoyi.common.core.domain.BaseEntity;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-import com.ruoyi.common.core.domain.BaseEntity;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 菜单权限表 sys_menu
- * 
+ *
  * @author ruoyi
  */
 public class SysMenu extends BaseEntity
@@ -53,7 +54,7 @@ public class SysMenu extends BaseEntity
 
     /** 显示状态（0显示 1隐藏） */
     private String visible;
-    
+
     /** 菜单状态（0显示 1隐藏） */
     private String status;
 
@@ -232,7 +233,7 @@ public class SysMenu extends BaseEntity
     {
         this.children = children;
     }
-    
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)

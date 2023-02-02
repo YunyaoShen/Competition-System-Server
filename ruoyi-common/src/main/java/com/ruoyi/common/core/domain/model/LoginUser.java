@@ -1,15 +1,17 @@
 package com.ruoyi.common.core.domain.model;
 
-import java.util.Collection;
-import java.util.Set;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import com.alibaba.fastjson2.annotation.JSONField;
 import com.ruoyi.common.core.domain.entity.SysUser;
+import com.ruoyi.common.core.domain.entity.SysSuser;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * 登录用户身份权限
- * 
+ *
  * @author ruoyi
  */
 public class LoginUser implements UserDetails
@@ -21,10 +23,9 @@ public class LoginUser implements UserDetails
      */
     private Long userId;
 
-    /**
-     * 部门ID
-     */
-    private Long deptId;
+    private String userName;
+    private String password;
+
 
     /**
      * 用户唯一标识
@@ -71,6 +72,8 @@ public class LoginUser implements UserDetails
      */
     private SysUser user;
 
+    private SysSuser stuser;
+
     public Long getUserId()
     {
         return userId;
@@ -79,16 +82,6 @@ public class LoginUser implements UserDetails
     public void setUserId(Long userId)
     {
         this.userId = userId;
-    }
-
-    public Long getDeptId()
-    {
-        return deptId;
-    }
-
-    public void setDeptId(Long deptId)
-    {
-        this.deptId = deptId;
     }
 
     public String getToken()
@@ -111,25 +104,48 @@ public class LoginUser implements UserDetails
         this.permissions = permissions;
     }
 
-    public LoginUser(Long userId, Long deptId, SysUser user, Set<String> permissions)
+    public LoginUser(Long userId, SysUser user, Set<String> permissions)
     {
         this.userId = userId;
-        this.deptId = deptId;
+        this.userName = user.getUserName();
+        this.password = user.getPassword();
         this.user = user;
         this.permissions = permissions;
+    }
+
+//    public LoginUser(SysSuser user, Set<String> permissions)
+//    {
+//        this.stuser = user;
+//        this.permissions = permissions;
+//    }
+//
+    public LoginUser(Long userId, SysSuser user)
+    {
+        this.userId = userId;
+        this.userName = user.getUserName();
+        this.password = user.getPassword();
+        this.stuser = user;
+        this.user = null;
+        this.permissions = null;
     }
 
     @JSONField(serialize = false)
     @Override
     public String getPassword()
     {
-        return user.getPassword();
+            return password;
     }
 
+
+    public void setPassword(String password)
+    {
+        this.password = password;
+    }
     @Override
     public String getUsername()
     {
-        return user.getUserName();
+            return userName;
+
     }
 
     /**
@@ -144,7 +160,7 @@ public class LoginUser implements UserDetails
 
     /**
      * 指定用户是否解锁,锁定的用户无法进行身份验证
-     * 
+     *
      * @return
      */
     @JSONField(serialize = false)
@@ -156,7 +172,7 @@ public class LoginUser implements UserDetails
 
     /**
      * 指示是否已过期的用户的凭据(密码),过期的凭据防止认证
-     * 
+     *
      * @return
      */
     @JSONField(serialize = false)
@@ -168,7 +184,7 @@ public class LoginUser implements UserDetails
 
     /**
      * 是否可用 ,禁用的用户不能身份验证
-     * 
+     *
      * @return
      */
     @JSONField(serialize = false)
@@ -258,9 +274,35 @@ public class LoginUser implements UserDetails
         this.user = user;
     }
 
+    public SysSuser getSuser() {
+        return stuser;
+    }
+
+    public void setSUser(SysSuser stuser) {
+        this.stuser = stuser;
+    }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities()
     {
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return "LoginUser{" +
+                "userId=" + userId +
+                ", userName='" + userName + '\'' +
+                ", password='" + password + '\'' +
+                ", token='" + token + '\'' +
+                ", loginTime=" + loginTime +
+                ", expireTime=" + expireTime +
+                ", ipaddr='" + ipaddr + '\'' +
+                ", loginLocation='" + loginLocation + '\'' +
+                ", browser='" + browser + '\'' +
+                ", os='" + os + '\'' +
+                ", permissions=" + permissions +
+                ", user=" + user +
+                ", stuser=" + stuser +
+                '}';
     }
 }

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.CompetitionAuditMapper">
+    
+    <resultMap type="CompetitionAudit" id="CompetitionAuditResult">
+        <result property="activityId"    column="activity_id"    />
+        <result property="activityName"    column="activity_name"    />
+        <result property="startTime"    column="start_time"    />
+        <result property="endTime"    column="end_time"    />
+    </resultMap>
+
+    <sql id="selectCompetitionAuditVo">
+        select activity_id, activity_name, start_time, end_time from competition_audit
+    </sql>
+
+    <select id="selectCompetitionAuditList" parameterType="CompetitionAudit" resultMap="CompetitionAuditResult">
+        <include refid="selectCompetitionAuditVo"/>
+        <where>  
+            <if test="activityName != null  and activityName != ''"> and activity_name like concat('%', #{activityName}, '%')</if>
+            <if test="startTime != null "> and start_time = #{startTime}</if>
+            <if test="endTime != null "> and end_time = #{endTime}</if>
+        </where>
+    </select>
+    
+    <select id="selectCompetitionAuditByActivityId" parameterType="Long" resultMap="CompetitionAuditResult">
+        <include refid="selectCompetitionAuditVo"/>
+        where activity_id = #{activityId}
+    </select>
+        
+    <insert id="insertCompetitionAudit" parameterType="CompetitionAudit">
+        insert into competition_audit
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="activityId != null">activity_id,</if>
+            <if test="activityName != null and activityName != ''">activity_name,</if>
+            <if test="startTime != null">start_time,</if>
+            <if test="endTime != null">end_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="activityId != null">#{activityId},</if>
+            <if test="activityName != null and activityName != ''">#{activityName},</if>
+            <if test="startTime != null">#{startTime},</if>
+            <if test="endTime != null">#{endTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateCompetitionAudit" parameterType="CompetitionAudit">
+        update competition_audit
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="activityName != null and activityName != ''">activity_name = #{activityName},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+        </trim>
+        where activity_id = #{activityId}
+    </update>
+
+    <delete id="deleteCompetitionAuditByActivityId" parameterType="Long">
+        delete from competition_audit where activity_id = #{activityId}
+    </delete>
+
+    <delete id="deleteCompetitionAuditByActivityIds" parameterType="String">
+        delete from competition_audit where activity_id in 
+        <foreach item="activityId" collection="array" open="(" separator="," close=")">
+            #{activityId}
+        </foreach>
+    </delete>
+</mapper>

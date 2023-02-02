@@ -1,6 +1,8 @@
 package com.ruoyi.framework.web.service;
 
 import javax.annotation.Resource;
+
+import com.alibaba.fastjson2.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -11,6 +13,7 @@ import com.ruoyi.common.constant.CacheConstants;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.LoginUser;
+import com.ruoyi.common.core.domain.model.NameHelper;
 import com.ruoyi.common.core.redis.RedisCache;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.exception.user.CaptchaException;
@@ -23,12 +26,13 @@ import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.ip.IpUtils;
 import com.ruoyi.framework.manager.AsyncManager;
 import com.ruoyi.framework.manager.factory.AsyncFactory;
+import com.ruoyi.framework.security.context.AuthenticationContextHolder;
 import com.ruoyi.system.service.ISysConfigService;
 import com.ruoyi.system.service.ISysUserService;
 
 /**
  * 登录校验方法
- * 
+ *
  * @author ruoyi
  */
 @Component
@@ -42,7 +46,7 @@ public class SysLoginService
 
     @Autowired
     private RedisCache redisCache;
-    
+
     @Autowired
     private ISysUserService userService;
 
@@ -51,28 +55,32 @@ public class SysLoginService
 
     /**
      * 登录验证
-     * 
+     *
      * @param username 用户名
      * @param password 密码
      * @param code 验证码
      * @param uuid 唯一标识
      * @return 结果
      */
-    public String login(String username, String password, String code, String uuid)
+    public String login(String username, String password, String code, String uuid, String userType)
     {
-        boolean captchaOnOff = configService.selectCaptchaOnOff();
+        boolean captchaEnabled = configService.selectCaptchaEnabled();
         // 验证码开关
-        if (captchaOnOff)
+        if (captchaEnabled)
         {
             validateCaptcha(username, code, uuid);
         }
         // 用户验证
         Authentication authentication = null;
+        NameHelper nameHelper = new NameHelper();
+        nameHelper.setName(username);
+        nameHelper.setUserType(userType);
         try
         {
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(JSON.toJSONString(nameHelper), password);
+            AuthenticationContextHolder.setContext(authenticationToken);
             // 该方法会去调用UserDetailsServiceImpl.loadUserByUsername
-            authentication = authenticationManager
-                    .authenticate(new UsernamePasswordAuthenticationToken(username, password));
+            authentication = authenticationManager.authenticate(authenticationToken);
         }
         catch (Exception e)
         {
@@ -90,13 +98,14 @@ public class SysLoginService
         AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_SUCCESS, MessageUtils.message("user.login.success")));
         LoginUser loginUser = (LoginUser) authentication.getPrincipal();
         recordLoginInfo(loginUser.getUserId());
+//        System.out.println("1212121212121212121212");
         // 生成token
         return tokenService.createToken(loginUser);
     }
 
     /**
      * 校验验证码
-     * 
+     *
      * @param username 用户名
      * @param code 验证码
      * @param uuid 唯一标识

@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysSuserMapper">
+
+	<resultMap type="SysSuser" id="SysSuserResult">
+		<id     property="userId"       column="user_id"      />
+		<result property="userName"    column="user_name"    />
+		<result property="nickName"    column="nick_name"    />
+		<result property="sex"    column="sex"    />
+		<result property="userType"    column="user_type"    />
+		<result property="studentId"    column="student_id"    />
+		<result property="orgnization"    column="orgnization"    />
+		<result property="orgnizationName"    column="organization_name"    />
+		<result property="academy"    column="academy"    />
+		<result property="major"    column="major"    />
+		<result property="phonenumber"    column="phonenumber"    />
+		<result property="email"    column="email"    />
+		<result property="userRemark"    column="user_remark"    />
+		<result property="password"    column="password"    />
+		<result property="avatar"    column="avatar"    />
+		<result property="status"    column="status"    />
+		<result property="delFlag"    column="del_flag"    />
+		<result property="loginIp"    column="login_ip"    />
+		<result property="loginDate"    column="login_date"    />
+		<result property="createBy"    column="create_by"    />
+		<result property="createTime"    column="create_time"    />
+		<result property="updateBy"    column="update_by"    />
+		<result property="updateTime"    column="update_time"    />
+		<result property="remark"    column="remark"    />
+		<collection  property="roles"   javaType="java.util.List"        resultMap="RoleResult" />
+	</resultMap>
+	
+	<resultMap id="RoleResult" type="SysRole">
+		<id     property="roleId"       column="role_id"        />
+		<result property="roleName"     column="role_name"      />
+		<result property="roleKey"      column="role_key"       />
+		<result property="roleSort"     column="role_sort"      />
+		<result property="dataScope"     column="data_scope"    />
+		<result property="status"       column="role_status"    />
+	</resultMap>
+
+	<sql id="selectUserVo">
+        select u.user_id, u.user_name, u.nick_name, u.sex, u.user_type, u.student_id, u.orgnization, u.academy, u.major, u.phonenumber, u.email, u.user_remark, u.password, u.avatar, u.status, u.del_flag, u.login_ip, u.login_date, u.create_by, u.create_time, u.update_by, u.update_time, u.remark,
+        r.role_id, r.role_name, r.role_key, r.role_sort, r.data_scope, r.status as role_status,
+        org.organization_name
+        from sys_suser u
+		    left join sys_user_role ur on u.user_id = ur.user_id
+		    left join sys_role r on r.role_id = ur.role_id
+            left join sys_organization org on  org.organization_id = u.orgnization
+    </sql>
+    
+    <select id="selectUserList" parameterType="SysSuser" resultMap="SysSuserResult">
+		select u.user_id, u.user_name, u.nick_name, u.sex, u.user_type, u.student_id, u.orgnization, u.academy, u.major, u.phonenumber, u.email, u.user_remark, u.password, u.avatar, u.status, u.del_flag, u.login_ip, u.login_date, u.create_by, u.create_time, u.update_by, u.update_time, u.remark,
+		org.organization_name
+		from sys_suser u
+		    left join sys_organization org on org.organization_id = u.orgnization
+		where u.del_flag = '0'
+		AND u.user_name != "admin"
+		AND u.status !="2"
+		<if test="userId != null and userId != 0">
+			AND u.user_id != #{userId}
+		</if>
+		<if test="userName != null and userName != ''">
+			AND u.user_name like concat('%', #{userName}, '%')
+		</if>
+		<if test="nickName != null and nickName != ''">
+			AND u.nick_name like concat('%', #{nickName}, '%')
+		</if>
+		<if test="orgnization != null  and orgnization != ''">
+			AND u.orgnization = #{orgnization}
+		</if>
+		<if test="orgnizationName != null  and orgnizationName != ''">
+		  AND org.organization_name like concat('%', #{orgnizationName}, '%')
+		</if>
+		<if test="status != null and status != ''">
+			AND u.status = #{status}
+		</if>
+		<if test="phonenumber != null and phonenumber != ''">
+			AND u.phonenumber like concat('%', #{phonenumber}, '%')
+		</if>
+		<if test="params.beginTime != null and params.beginTime != ''"><!-- 开始时间检索 -->
+			AND date_format(u.create_time,'%y%m%d') &gt;= date_format(#{params.beginTime},'%y%m%d')
+		</if>
+		<if test="params.endTime != null and params.endTime != ''"><!-- 结束时间检索 -->
+			AND date_format(u.create_time,'%y%m%d') &lt;= date_format(#{params.endTime},'%y%m%d')
+		</if>
+		<!-- 数据范围过滤 -->
+		${params.dataScope}
+	</select>
+	
+	<select id="selectAllocatedList" parameterType="SysSuser" resultMap="SysSuserResult">
+	    select distinct u.user_id, u.user_name, u.nick_name, u.email, u.phonenumber, u.status, u.create_time
+	    from sys_suser u
+			 left join sys_user_role ur on u.user_id = ur.user_id
+			 left join sys_role r on r.role_id = ur.role_id
+	    where u.del_flag = '0' and r.role_id = #{roleId}
+	    <if test="userName != null and userName != ''">
+			AND u.user_name like concat('%', #{userName}, '%')
+		</if>
+		<if test="phonenumber != null and phonenumber != ''">
+			AND u.phonenumber like concat('%', #{phonenumber}, '%')
+		</if>
+		<!-- 数据范围过滤 -->
+		${params.dataScope}
+	</select>
+	
+	<select id="selectUnallocatedList" parameterType="SysSuser" resultMap="SysSuserResult">
+	    select distinct u.user_id, u.user_name, u.nick_name, u.email, u.phonenumber, u.status, u.create_time
+	    from sys_suser u
+			 left join sys_user_role ur on u.user_id = ur.user_id
+			 left join sys_role r on r.role_id = ur.role_id
+	    where u.del_flag = '0' and (r.role_id != #{roleId} or r.role_id IS NULL)
+	    and u.user_id not in (select u.user_id from sys_suser u inner join sys_user_role ur on u.user_id = ur.user_id and ur.role_id = #{roleId})
+	    <if test="userName != null and userName != ''">
+			AND u.user_name like concat('%', #{userName}, '%')
+		</if>
+		<if test="phonenumber != null and phonenumber != ''">
+			AND u.phonenumber like concat('%', #{phonenumber}, '%')
+		</if>
+		<!-- 数据范围过滤 -->
+		${params.dataScope}
+	</select>
+	
+	<select id="selectUserByUserName" parameterType="String" resultMap="SysSuserResult">
+	    <include refid="selectUserVo"/>
+		where u.user_name = #{userName}
+	</select>
+	
+	<select id="selectUserById" parameterType="Long" resultMap="SysSuserResult">
+		<include refid="selectUserVo"/>
+		where u.user_id = #{userId}
+	</select>
+	
+	<select id="checkUserNameUnique" parameterType="String" resultType="int">
+		select count(1) from sys_suser where user_name = #{userName} limit 1
+	</select>
+	
+	<select id="checkPhoneUnique" parameterType="String" resultMap="SysSuserResult">
+		select user_id, phonenumber from sys_suser where phonenumber = #{phonenumber} limit 1
+	</select>
+	
+	<select id="checkEmailUnique" parameterType="String" resultMap="SysSuserResult">
+		select user_id, email from sys_suser where email = #{email} limit 1
+	</select>
+	
+	<insert id="insertUser" parameterType="SysSuser" useGeneratedKeys="true" keyProperty="userId">
+ 		insert into sys_suser(
+ 			<if test="userId != null and userId != 0">user_id,</if>
+			<if test="userName != null and userName != ''">user_name,</if>
+			<if test="nickName != null and nickName != ''">nick_name,</if>
+			<if test="sex != null">sex,</if>
+			<if test="userType != null">user_type,</if>
+			<if test="studentId != null">student_id,</if>
+			<if test="orgnization != null">orgnization,</if>
+			<if test="academy != null">academy,</if>
+			<if test="major != null">major,</if>
+			<if test="phonenumber != null">phonenumber,</if>
+			<if test="email != null">email,</if>
+			<if test="userRemark != null">user_remark,</if>
+			<if test="password != null">password,</if>
+			<if test="avatar != null">avatar,</if>
+			<if test="status != null">status,</if>
+			<if test="createBy != null">create_by,</if>
+			<if test="remark != null">remark,</if>
+ 			create_time
+ 		)values(
+ 			<if test="userId != null and userId != ''">#{userId},</if>
+			<if test="userName != null and userName != ''">#{userName},</if>
+			<if test="nickName != null and nickName != ''">#{nickName},</if>
+			<if test="sex != null">#{sex},</if>
+			<if test="userType != null">#{userType},</if>
+			<if test="studentId != null">#{studentId},</if>
+			<if test="orgnization != null">#{orgnization},</if>
+			<if test="academy != null">#{academy},</if>
+			<if test="major != null">#{major},</if>
+			<if test="phonenumber != null">#{phonenumber},</if>
+			<if test="email != null">#{email},</if>
+			<if test="userRemark != null">#{userRemark},</if>
+			<if test="password != null">#{password},</if>
+			<if test="avatar != null">#{avatar},</if>
+			<if test="status != null">#{status},</if>
+			<if test="createBy != null">#{createBy},</if>
+			<if test="remark != null">#{remark},</if>
+ 			sysdate()
+ 		)
+	</insert>
+	
+	<update id="updateUser" parameterType="SysSuser">
+ 		update sys_suser
+ 		<set>
+			<if test="userName != null and userName != ''">user_name = #{userName},</if>
+			<if test="nickName != null and nickName != ''">nick_name = #{nickName},</if>
+			<if test="sex != null">sex = #{sex},</if>
+			<if test="userType != null">user_type = #{userType},</if>
+			<if test="studentId != null">student_id = #{studentId},</if>
+			<if test="orgnization != null">orgnization = #{orgnization},</if>
+			<if test="academy != null">academy = #{academy},</if>
+			<if test="major != null">major = #{major},</if>
+			<if test="phonenumber != null">phonenumber = #{phonenumber},</if>
+			<if test="email != null">email = #{email},</if>
+			<if test="userRemark != null">user_remark = #{userRemark},</if>
+			<if test="password != null and password != ''">password = #{password},</if>
+			<if test="avatar != null">avatar = #{avatar},</if>
+			<if test="status != null">status = #{status},</if>
+			<if test="loginIp != null">login_ip = #{loginIp},</if>
+			<if test="loginDate != null">login_date = #{loginDate},</if>
+			<if test="updateBy != null">update_by = #{updateBy},</if>
+			<if test="remark != null">remark = #{remark},</if>
+ 			update_time = sysdate()
+ 		</set>
+ 		where user_id = #{userId}
+	</update>
+	
+	<update id="updateUserStatus" parameterType="SysSuser">
+ 		update sys_suser set status = #{status} where user_id = #{userId}
+	</update>
+	
+	<update id="updateUserAvatar" parameterType="SysSuser">
+ 		update sys_suser set avatar = #{avatar} where user_name = #{userName}
+	</update>
+	
+	<update id="resetUserPwd" parameterType="SysSuser">
+ 		update sys_suser set password = #{password} where user_name = #{userName}
+	</update>
+	
+	<delete id="deleteUserById" parameterType="Long">
+		update sys_suser set del_flag = '2' where user_id = #{userId}
+ 	</delete>
+ 	
+ 	<delete id="deleteUserByIds" parameterType="Long">
+ 		update sys_suser set del_flag = '2' where user_id in
+ 		<foreach collection="array" item="userId" open="(" separator="," close=")">
+ 			#{userId}
+        </foreach> 
+ 	</delete>
+	
+</mapper> 

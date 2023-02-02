@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysActivityTypeMapper">
+    
+    <resultMap type="SysActivityType" id="SysActivityTypeResult">
+        <result property="typeId"    column="type_id"    />
+        <result property="typeName"    column="type_name"    />
+        <result property="typeRemark"    column="type_remark"    />
+    </resultMap>
+
+    <sql id="selectSysActivityTypeVo">
+        select type_id, type_name, type_remark from sys_activity_type
+    </sql>
+
+    <select id="selectSysActivityTypeList" parameterType="SysActivityType" resultMap="SysActivityTypeResult">
+        <include refid="selectSysActivityTypeVo"/>
+        <where>  
+            <if test="typeName != null  and typeName != ''"> and type_name like concat('%', #{typeName}, '%')</if>
+            <if test="typeRemark != null  and typeRemark != ''"> and type_remark = #{typeRemark}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysActivityTypeByTypeId" parameterType="Long" resultMap="SysActivityTypeResult">
+        <include refid="selectSysActivityTypeVo"/>
+        where type_id = #{typeId}
+    </select>
+        
+    <insert id="insertSysActivityType" parameterType="SysActivityType" useGeneratedKeys="true" keyProperty="typeId">
+        insert into sys_activity_type
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="typeName != null">type_name,</if>
+            <if test="typeRemark != null">type_remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="typeName != null">#{typeName},</if>
+            <if test="typeRemark != null">#{typeRemark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysActivityType" parameterType="SysActivityType">
+        update sys_activity_type
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="typeName != null">type_name = #{typeName},</if>
+            <if test="typeRemark != null">type_remark = #{typeRemark},</if>
+        </trim>
+        where type_id = #{typeId}
+    </update>
+
+    <delete id="deleteSysActivityTypeByTypeId" parameterType="Long">
+        delete from sys_activity_type where type_id = #{typeId}
+    </delete>
+
+    <delete id="deleteSysActivityTypeByTypeIds" parameterType="String">
+        delete from sys_activity_type where type_id in 
+        <foreach item="typeId" collection="array" open="(" separator="," close=")">
+            #{typeId}
+        </foreach>
+    </delete>
+</mapper>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.UserActivityMapper">
+
+    <resultMap type="com.ruoyi.system.domain.UserActivity" id="UserActivityResult">
+        <result property="userId"    column="user_id"    />
+        <result property="activityId"    column="activity_id"    />
+        <result property="date"    column="date"    />
+        <result property="fileId"    column="file_id"    />
+        <result property="activityState"    column="activity_state"    />
+        <association property="user" column="user_id" javaType="com.ruoyi.common.core.domain.entity.SysSuser" >
+            <id     property="userId"       column="user_id"      />
+            <result property="userName"    column="user_name"    />
+            <result property="nickName"    column="nick_name"    />
+            <result property="sex"    column="sex"    />
+            <result property="orgnizationName"    column="organization_name"    />
+            <result property="academy"    column="academy"    />
+            <result property="major"    column="major"    />
+            <result property="phonenumber"    column="phonenumber"    />
+            <result property="email"    column="email"    />
+        </association>
+        <association property="file" column="file_id" javaType="com.ruoyi.system.domain.WorkFile" >
+            <result property="fileName"    column="file_name"    />
+        </association>
+    </resultMap>
+
+    <sql id="selectUserActivityVo">
+        select ua.user_id, ua.activity_id, ua.date, ua.file_id, ua.activity_state from t_user_activity ua
+    </sql>
+
+    <select id="selectUserActivityList" parameterType="String" resultMap="UserActivityResult">
+        select ua.user_id, ua.activity_id, ua.date, ua.file_id, ua.activity_state,
+        u.user_name, u.nick_name, u.sex, u.academy, u.major, u.phonenumber, u.email,
+        f.file_name,org.organization_name
+        from t_user_activity ua
+        left join sys_suser u on ua.user_id = u.user_id
+        left join sys_organization org on org.organization_id = u.orgnization
+        left join t_workfile f on f.file_id = ua.file_id
+        where ua.activity_id =#{activityId}
+    </select>
+
+    <select id="selectUserActivityByUserIdANDActivityId" resultMap="UserActivityResult">
+        <include refid="selectUserActivityVo"/>
+        where user_id = #{userId} AND activity_id = #{activityId}
+    </select>
+
+    <insert id="insertUserActivity" parameterType="UserActivity">
+        insert into t_user_activity
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="activityId != null">activity_id,</if>
+            <if test="date != null">date,</if>
+            <if test="fileId != null">file_id,</if>
+            <if test="activityState != null">activity_state,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="activityId != null">#{activityId},</if>
+            <if test="date != null">#{date},</if>
+            <if test="fileId != null">#{fileId},</if>
+            <if test="activityState != null">#{activityState},</if>
+        </trim>
+    </insert>
+
+    <update id="updateUserActivity" parameterType="UserActivity">
+        update t_user_activity
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="date != null">date = #{date},</if>
+            <if test="fileId != null">file_id = #{fileId},</if>
+            <if test="activityState != null">activity_state = #{activityState},</if>
+            <if test="score != null">score = #{score},</if>
+        </trim>
+        where user_id = #{userId} AND activity_id = #{activityId}
+    </update>
+
+    <delete id="deleteUserActivityByUserIdANDActivityId" >
+        delete from t_user_activity where user_id = #{userId} AND activity_id = #{activityId}
+    </delete>
+
+    <delete id="deleteUserActivityByUserIds" parameterType="String">
+        delete from t_user_activity where user_id in
+        <foreach item="userId" collection="array" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+    </delete>
+</mapper>

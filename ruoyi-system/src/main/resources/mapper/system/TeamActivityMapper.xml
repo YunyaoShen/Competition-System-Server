@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TeamActivityMapper">
+
+    <resultMap type="TeamActivity" id="TeamActivityResult">
+        <result property="teamId"    column="team_id"    />
+        <result property="activityId"    column="activity_id"    />
+        <result property="date"    column="date"    />
+        <result property="fileId"    column="file_id"    />
+        <result property="activityState"    column="activity_state"    />
+        <association property="team" column="team_id" javaType="com.ruoyi.system.domain.Team">
+            <id column="team_id" property="teamId" javaType="String"/>
+            <result column="team_name" property="teamName" javaType="String"/>
+            <result column="audit_state" property="auditState" javaType="Integer"/>
+            <association property="captain" column="user_id" javaType="com.ruoyi.common.core.domain.entity.SysSuser">
+                <id     property="userId"       column="user_id"      />
+                <result property="userName"    column="user_name"    />
+                <result property="nickName"    column="nick_name"    />
+                <result property="sex"    column="sex"    />
+                <result property="orgnization"    column="orgnization"    />
+                <result property="orgnizationName"    column="organization_name"    />
+                <result property="academy"    column="academy"    />
+                <result property="major"    column="major"    />
+                <result property="phonenumber"    column="phonenumber"    />
+                <result property="email"    column="email"    />
+            </association>
+        </association>
+        <association property="file" column="file_id" javaType="com.ruoyi.system.domain.WorkFile" >
+            <result property="fileName"    column="file_name"    />
+        </association>
+    </resultMap>
+
+    <sql id="selectTeamActivityVo">
+        select team_id, activity_id, date, file_id, activity_state from t_team_activity
+    </sql>
+
+    <select id="selectTeamActivityList" parameterType="String" resultMap="TeamActivityResult">
+        select ta.team_id, ta.activity_id, ta.date, ta.file_id, ta.activity_state,
+               t.team_name,t.audit_state,
+               u.user_id, u.user_name, u.nick_name, u.sex, u.orgnization, u.academy, u.major, u.phonenumber, u.email,org.organization_name,
+               f.file_name
+        from t_team_activity ta
+         left join t_team t on ta.team_id = t.team_id
+         left join sys_suser u on t.captain_id = u.user_id
+        left join sys_organization org on org.organization_id = u.orgnization
+         left join t_workfile f on f.file_id = ta.file_id
+        where ta.activity_id =#{activityId}
+    </select>
+
+    <select id="selectTeamActivityByTeamIdANDActivityId" resultMap="TeamActivityResult">
+        <include refid="selectTeamActivityVo"/>
+        where team_id = #{teamId} AND activity_id = #{activityId}
+    </select>
+
+    <insert id="insertTeamActivity" parameterType="TeamActivity">
+        insert into t_team_activity
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="teamId != null">team_id,</if>
+            <if test="activityId != null">activity_id,</if>
+            <if test="date != null">date,</if>
+            <if test="fileId != null">file_id,</if>
+            <if test="activityState != null">activity_state,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="teamId != null">#{teamId},</if>
+            <if test="activityId != null">#{activityId},</if>
+            <if test="date != null">#{date},</if>
+            <if test="fileId != null">#{fileId},</if>
+            <if test="activityState != null">#{activityState},</if>
+        </trim>
+    </insert>
+
+    <update id="updateTeamActivity" parameterType="TeamActivity">
+        update t_team_activity
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="date != null">date = #{date},</if>
+            <if test="fileId != null">file_id = #{fileId},</if>
+            <if test="activityState != null">activity_state = #{activityState},</if>
+            <if test="score != null">score = #{score},</if>
+        </trim>
+        where team_id = #{teamId} AND activity_id = #{activityId}
+    </update>
+
+    <delete id="deleteTeamActivityByTeamIdANDActivityId" >
+        delete from t_team_activity where team_id = #{teamId} AND activity_id = #{activityId}
+    </delete>
+
+
+    <delete id="deleteTeamActivityByTeamIds" parameterType="String">
+        delete from t_team_activity where team_id in
+        <foreach item="teamId" collection="array" open="(" separator="," close=")">
+            #{teamId}
+        </foreach>
+    </delete>
+</mapper>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysActivityMapper">
+    
+    <resultMap type="SysActivity" id="SysActivityResult">
+        <result property="activityId"    column="activity_id"    />
+        <result property="activityName"    column="activity_name"    />
+        <result property="startTime"    column="start_time"    />
+        <result property="endTime"    column="end_time"    />
+        <result property="activityScale"    column="activity_scale"    />
+        <result property="activityDeclarer"    column="activity_declarer"    />
+        <result property="activityPlace"    column="activity_place"    />
+        <result property="activityOrganizer"    column="activity_organizer"    />
+        <result property="activityType"    column="activity_type"    />
+        <result property="activityState"    column="activity_state"    />
+    </resultMap>
+
+    <sql id="selectSysActivityVo">
+        select activity_id, activity_name, start_time, end_time, activity_scale, activity_declarer, activity_place, activity_organizer, activity_type, activity_state from sys_activity
+    </sql>
+
+    <select id="selectSysActivityList" parameterType="SysActivity" resultMap="SysActivityResult">
+        <include refid="selectSysActivityVo"/>
+        <where>  
+            <if test="activityName != null  and activityName != ''"> and activity_name like concat('%', #{activityName}, '%')</if>
+            <if test="startTime != null "> and start_time = #{startTime}</if>
+            <if test="endTime != null "> and end_time = #{endTime}</if>
+            <if test="activityScale != null "> and activity_scale = #{activityScale}</if>
+            <if test="activityDeclarer != null  and activityDeclarer != ''"> and activity_declarer = #{activityDeclarer}</if>
+            <if test="activityPlace != null  and activityPlace != ''"> and activity_place = #{activityPlace}</if>
+            <if test="activityOrganizer != null  and activityOrganizer != ''"> and activity_organizer = #{activityOrganizer}</if>
+            <if test="activityType != null  and activityType != ''"> and activity_type = #{activityType}</if>
+            <if test="activityState != null "> and activity_state = #{activityState}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysActivityByActivityId" parameterType="Long" resultMap="SysActivityResult">
+        <include refid="selectSysActivityVo"/>
+        where activity_id = #{activityId}
+    </select>
+        
+    <insert id="insertSysActivity" parameterType="SysActivity" useGeneratedKeys="true" keyProperty="activityId">
+        insert into sys_activity
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="activityName != null and activityName != ''">activity_name,</if>
+            <if test="startTime != null">start_time,</if>
+            <if test="endTime != null">end_time,</if>
+            <if test="activityScale != null">activity_scale,</if>
+            <if test="activityDeclarer != null and activityDeclarer != ''">activity_declarer,</if>
+            <if test="activityPlace != null and activityPlace != ''">activity_place,</if>
+            <if test="activityOrganizer != null and activityOrganizer != ''">activity_organizer,</if>
+            <if test="activityType != null and activityType != ''">activity_type,</if>
+            <if test="activityState != null">activity_state,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="activityName != null and activityName != ''">#{activityName},</if>
+            <if test="startTime != null">#{startTime},</if>
+            <if test="endTime != null">#{endTime},</if>
+            <if test="activityScale != null">#{activityScale},</if>
+            <if test="activityDeclarer != null and activityDeclarer != ''">#{activityDeclarer},</if>
+            <if test="activityPlace != null and activityPlace != ''">#{activityPlace},</if>
+            <if test="activityOrganizer != null and activityOrganizer != ''">#{activityOrganizer},</if>
+            <if test="activityType != null and activityType != ''">#{activityType},</if>
+            <if test="activityState != null">#{activityState},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysActivity" parameterType="SysActivity">
+        update sys_activity
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="activityName != null and activityName != ''">activity_name = #{activityName},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="activityScale != null">activity_scale = #{activityScale},</if>
+            <if test="activityDeclarer != null and activityDeclarer != ''">activity_declarer = #{activityDeclarer},</if>
+            <if test="activityPlace != null and activityPlace != ''">activity_place = #{activityPlace},</if>
+            <if test="activityOrganizer != null and activityOrganizer != ''">activity_organizer = #{activityOrganizer},</if>
+            <if test="activityType != null and activityType != ''">activity_type = #{activityType},</if>
+            <if test="activityState != null">activity_state = #{activityState},</if>
+        </trim>
+        where activity_id = #{activityId}
+    </update>
+
+    <delete id="deleteSysActivityByActivityId" parameterType="Long">
+        delete from sys_activity where activity_id = #{activityId}
+    </delete>
+
+    <delete id="deleteSysActivityByActivityIds" parameterType="String">
+        delete from sys_activity where activity_id in 
+        <foreach item="activityId" collection="array" open="(" separator="," close=")">
+            #{activityId}
+        </foreach>
+    </delete>
+</mapper>

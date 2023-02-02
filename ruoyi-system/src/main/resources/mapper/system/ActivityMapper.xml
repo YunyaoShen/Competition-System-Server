@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.ActivityMapper">
+
+    <resultMap type="Activity" id="ActivityResult">
+        <id property="activityId"    column="activity_id"    />
+        <result property="activityName"    column="activity_name"    />
+        <result property="competitionId"    column="competition_id"    />
+        <result property="competitionName"    column="competition_name"    />
+        <result property="ordernum"    column="ordernum"    />
+        <result property="activityStarttime"    column="activity_starttime"    />
+        <result property="activityEndtime"    column="activity_endtime"    />
+        <result property="reviewStatus"    column="review_status"    />
+    </resultMap>
+
+    <sql id="selectActivityVo">
+        select a.activity_id, a.activity_name, a.competition_id, a.ordernum, a.activity_starttime, a.activity_endtime
+        from t_activity a
+    </sql>
+
+    <select id="selectActivityList" parameterType="String" resultMap="ActivityResult">
+        select a.activity_id, a.activity_name, a.competition_id, a.ordernum, a.activity_starttime, a.activity_endtime,a.review_status,
+        c.competition_name
+        from t_activity a
+        left join t_competition c on c.competition_id = a.competition_id
+        where a.competition_id = #{v}
+        order by ordernum asc
+    </select>
+
+    <select id="selectActivityFirst" parameterType="String" resultMap="ActivityResult">
+        select a.activity_id, a.ordernum
+        from t_activity a where a.competition_id = #{v}
+        order by ordernum asc limit 1
+    </select>
+
+    <select id="selectActivityByActivityId" parameterType="String" resultMap="ActivityResult">
+        select a.activity_id, a.activity_name, a.competition_id, a.ordernum, a.activity_starttime, a.activity_endtime
+        from t_activity a
+        where a.activity_id = #{activityId}
+    </select>
+
+    <insert id="insertActivity" parameterType="Activity">
+        insert into t_activity
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="activityId != null">activity_id,</if>
+            <if test="activityName != null">activity_name,</if>
+            <if test="competitionId != null and competitionId != ''">competition_id,</if>
+            <if test="ordernum != null">ordernum,</if>
+            <if test="activityStarttime != null">activity_starttime,</if>
+            <if test="activityEndtime != null">activity_endtime,</if>
+            review_status
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="activityId != null">#{activityId},</if>
+            <if test="activityName != null">#{activityName},</if>
+            <if test="competitionId != null and competitionId != ''">#{competitionId},</if>
+            <if test="ordernum != null">#{ordernum},</if>
+            <if test="activityStarttime != null">#{activityStarttime},</if>
+            <if test="activityEndtime != null">#{activityEndtime},</if>
+            0
+        </trim>
+    </insert>
+
+    <update id="updateActivity" parameterType="Activity">
+        update t_activity
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="activityName != null">activity_name = #{activityName},</if>
+            <if test="competitionId != null and competitionId != ''">competition_id = #{competitionId},</if>
+            <if test="ordernum != null">ordernum = #{order},</if>
+            <if test="activityStarttime != null">activity_starttime = #{activityStarttime},</if>
+            <if test="activityEndtime != null">activity_endtime = #{activityEndtime},</if>
+        </trim>
+        where activity_id = #{activityId}
+    </update>
+
+    <delete id="deleteActivityByActivityId" parameterType="String">
+        delete from t_activity where activity_id = #{activityId}
+    </delete>
+
+    <delete id="deleteActivityByActivityIds" parameterType="String">
+        delete from t_activity where activity_id in
+        <foreach item="activityId" collection="array" open="(" separator="," close=")">
+            #{activityId}
+        </foreach>
+    </delete>
+</mapper>

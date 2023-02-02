@@ -1,14 +1,15 @@
 package com.ruoyi.system.domain;
 
-import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.annotation.Excel.ColumnType;
 import com.ruoyi.common.core.domain.BaseEntity;
 
+import java.util.Date;
+
 /**
  * 操作日志记录表 oper_log
- * 
+ *
  * @author ruoyi
  */
 public class SysOperLog extends BaseEntity
@@ -45,10 +46,6 @@ public class SysOperLog extends BaseEntity
     /** 操作人员 */
     @Excel(name = "操作人员")
     private String operName;
-
-    /** 部门名称 */
-    @Excel(name = "部门名称")
-    private String deptName;
 
     /** 请求url */
     @Excel(name = "请求地址")
@@ -163,15 +160,6 @@ public class SysOperLog extends BaseEntity
         this.operName = operName;
     }
 
-    public String getDeptName()
-    {
-        return deptName;
-    }
-
-    public void setDeptName(String deptName)
-    {
-        this.deptName = deptName;
-    }
 
     public String getOperUrl()
     {

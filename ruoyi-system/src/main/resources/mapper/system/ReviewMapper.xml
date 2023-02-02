@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.ReviewDao">
+
+    <select id="selectReviewList" parameterType="com.ruoyi.system.domain.Review" resultMap="ReviewListResult">
+        select r.review_id,r.tuser_id,r.competition_id,r.activity_id,r.competition_type,
+        c.competition_name,a.activity_name,tu.nick_name
+        from t_review r
+        left join t_competition c on r.competition_id = c.competition_id
+        left join t_activity a on r.activity_id = a.activity_id
+        left join sys_tuser tu on tu.user_id = r.tuser_id
+        <where>
+        <if test="tuserId != null and tuserId != 0">
+            r.tuser_id = #{tuserId}
+        </if>
+        </where>
+    </select>
+
+    <resultMap id="ReviewListResult" type="com.ruoyi.system.domain.Review">
+        <result column="review_id" property="reviewId" javaType="String"/>
+        <result column="tuser_id" property="tuserId" javaType="Long"/>
+        <result column="competition_id" property="competitionId" javaType="String"/>
+        <result column="activity_id" property="activityId" javaType="String"/>
+        <result column="competition_name" property="competitionName" javaType="String"/>
+        <result column="activity_name" property="activityName" javaType="String"/>
+        <result column="competition_type" property="competitionType" javaType="Integer"/>
+        <result column="nick_name" property="tuserName" javaType="String"/>
+    </resultMap>
+
+    <insert id="insertReview" parameterType="com.ruoyi.system.domain.Review">
+        INSERT INTO t_review(review_id,tuser_id,competition_id,activity_id,competition_type)
+        values (#{reviewId},#{tuserId}, #{competitionId},#{activityId},#{competitionType})
+    </insert>
+
+    <insert id="insertUserReview">
+        <foreach collection="userActivities" item = "item" separator=";">
+            INSERT INTO t_review_user(review_id,user_id,review_state)
+            values
+            (#{reviewId},#{item.userId},0)
+        </foreach>
+    </insert>
+
+    <insert id="insertTeamReview">
+        <foreach collection="teamActivities" item = "item" separator=";">
+            INSERT INTO t_review_team(review_id,team_id,review_state)
+            values
+            (#{reviewId},#{item.teamId},0)
+        </foreach>
+    </insert>
+
+    <update id="resetReviewState" parameterType="String">
+        update t_activity set review_status = 1 where activity_id = #{activityId}
+    </update>
+
+    <select id="findUserActivity" parameterType="String" resultMap="findUserActivityMap">
+        SELECT *
+        FROM t_user_activity ua
+        WHERE (ua.activity_id = #{v} AND ua.file_id is not null)
+    </select>
+    <resultMap id="findUserActivityMap" type="com.ruoyi.system.domain.UserActivity">
+        <result column="user_id" property="userId" javaType="Long"/>
+        <result column="activity_id" property="activityId" javaType="String"/>
+    </resultMap>
+
+
+    <select id="findTeamActivity" parameterType="String" resultMap="findTeamActivityMap">
+        SELECT *
+        FROM t_team_activity ta
+        WHERE (ta.activity_id = #{v} AND ta.file_id is not null)
+    </select>
+
+    <resultMap id="findTeamActivityMap" type="com.ruoyi.system.domain.TeamActivity">
+        <result column="team_id" property="teamId" javaType="String"/>
+        <result column="activity_id" property="activityId" javaType="String"/>
+    </resultMap>
+
+    <select id="selectUserworkList" parameterType="String" resultMap="UserworkList">
+        SELECT ru.review_id,ru.user_id,ru.review_state,r.activity_id,ua.file_id,ua.activity_state,ua.score,f.file_name
+        FROM t_review_user ru
+        left join t_review r on ru.review_id = r.review_id
+        left join t_user_activity ua on (ua.user_id = ru.user_id AND ua.activity_id = r.activity_id)
+        left join t_workfile f on f.file_id = ua.file_id
+        WHERE ru.review_id = #{v}
+    </select>
+
+    <resultMap id="UserworkList" type="com.ruoyi.system.domain.UserReview">
+        <result column="review_id" property="reviewId" javaType="String"/>
+        <result column="user_id" property="userId" javaType="Long"/>
+        <result column="review_state" property="reviewState" javaType="Integer"/>
+        <association property="userActivity" column="review_id" javaType="com.ruoyi.system.domain.UserActivity" >
+            <result     property="userId"       column="user_id"      />
+            <result     property="activityId"    column="activity_id"    />
+            <result     property="fileId"    column="file_id"    />
+            <result     property="score"    column="score"    />
+            <result     property="activityState"    column="activity_state"    />
+            <association property="file" column="file_id" javaType="com.ruoyi.system.domain.WorkFile" >
+                <result property="fileName"    column="file_name"    />
+            </association>
+        </association>
+    </resultMap>
+
+
+    <select id="selectTeamworkList" parameterType="String" resultMap="TeamworkList">
+        SELECT rt.review_id,rt.team_id,rt.review_state,r.activity_id,ta.file_id,ta.activity_state,ta.score,f.file_name
+        FROM t_review_team rt
+                 left join t_review r on rt.review_id = r.review_id
+                 left join t_team_activity ta on (ta.team_id = rt.team_id AND ta.activity_id = r.activity_id)
+                 left join t_workfile f on f.file_id = ta.file_id
+        WHERE rt.review_id = #{v}
+    </select>
+
+    <resultMap id="TeamworkList" type="com.ruoyi.system.domain.TeamReview">
+        <result column="review_id" property="reviewId" javaType="String"/>
+        <result column="team_id" property="teamId" javaType="String"/>
+        <result column="review_state" property="reviewState" javaType="Integer"/>
+        <association property="teamActivity"  javaType="com.ruoyi.system.domain.TeamActivity" >
+            <result     property="teamId"       column="team_id"      />
+            <result     property="activityId"    column="activity_id"    />
+            <result     property="fileId"    column="file_id"    />
+            <result     property="score"    column="score"    />
+            <result     property="activityState"    column="activity_state"    />
+            <association property="file" column="file_id" javaType="com.ruoyi.system.domain.WorkFile" >
+                <result property="fileName"    column="file_name"    />
+            </association>
+        </association>
+    </resultMap>
+
+
+    <update id="setReviewUserstate" >
+        update t_review_user set review_state = 1 where review_id = #{reviewId} AND user_id = #{userId}
+    </update>
+
+    <update id="setReviewTeamstate" >
+        update t_review_team set review_state = 1 where review_id = #{reviewId} AND team_id = #{teamId}
+    </update>
+
+</mapper>
+

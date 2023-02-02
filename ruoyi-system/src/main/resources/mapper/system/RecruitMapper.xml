@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.RecruitDao">
+    <select id="findAllTeamByState" resultMap="findAllTeamByStateMap">
+        SELECT t.team_id team_id, t.team_name team_name, t.team_headcount team_headcount, t.team_content team_content,
+        c.competition_id competition_id, c.competition_name competition_name, u.user_id user_id,u.user_name user_name, u.nick_name nick_name,
+        u.phonenumber phonenumber, u.email email
+        FROM t_team t
+        LEFT JOIN t_competition c
+        ON c.competition_id = t.competition_id
+        LEFT JOIN sys_suser u
+        ON u.user_id = t.captain_id
+        WHERE t.team_state = #{teamState} AND t.captain_id != #{captainId}
+
+    </select>
+
+    <resultMap id="findAllTeamByStateMap" type="com.ruoyi.system.domain.Team">
+        <id column="team_id" property="teamId" javaType="String"/>
+        <result column="team_name" property="teamName" javaType="String"/>
+        <result column="team_headcount" property="teamHeadcount" javaType="Integer"/>
+        <result column="team_content" property="teamContent" javaType="String"/>
+        <collection property="captain" javaType="com.ruoyi.common.core.domain.entity.SysSuser" column="user_id">
+            <id column="user_id" property="userId" javaType="Long"/>
+            <result column="user_name" property="userName" javaType="String"/>
+            <result column="nick_name" property="nickName" javaType="String"/>
+            <result column="phonenumber" property="phonenumber" javaType="String"/>
+            <result column="email" property="email" javaType="String"/>
+        </collection>
+        <collection property="competition" javaType="com.ruoyi.system.domain.Competition" column="competition_id">
+            <id column="competition_id" property="competitionId" javaType="String"/>
+            <result column="competition_name" property="competitionName" javaType="String"/>
+        </collection>
+    </resultMap>
+
+    <select id="findAllUserTeam" parameterType="Long" resultType="com.ruoyi.system.domain.UserTeam">
+        SELECT * FROM t_user_team WHERE user_id = #{v}
+    </select>
+
+</mapper>
+
